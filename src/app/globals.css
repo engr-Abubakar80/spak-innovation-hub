@@ -1,0 +1,85 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: #f8fafc;
+    --surface: #ffffff;
+    --foreground: #0f172a;
+  }
+
+  * {
+    border-color: theme("colors.slate.200");
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  :focus-visible {
+    outline: 2px solid theme("colors.brand.600");
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: theme("colors.brand.200");
+  }
+}
+
+@layer components {
+  .container-page {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .card {
+    @apply rounded-xl border border-slate-200 bg-white shadow-card;
+  }
+
+  .panel-title {
+    @apply text-base font-semibold text-ink;
+  }
+
+  .stat-value {
+    @apply text-2xl font-bold tracking-tight text-ink;
+  }
+
+  .prose-spak p {
+    @apply mb-4 leading-relaxed text-ink-soft;
+  }
+
+  .prose-spak h2 {
+    @apply mt-8 mb-3 text-xl font-semibold text-ink;
+  }
+
+  .prose-spak h3 {
+    @apply mt-6 mb-2 text-lg font-semibold text-ink;
+  }
+
+  .link {
+    @apply font-medium text-brand-700 hover:text-brand-800 hover:underline;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: theme("colors.slate.300");
+    border-radius: 9999px;
+  }
+}

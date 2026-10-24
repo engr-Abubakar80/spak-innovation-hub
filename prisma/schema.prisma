@@ -1,0 +1,579 @@
+// SPAK Innovation Hub — Prisma schema
+// PostgreSQL. All timestamps stored in UTC; display uses ORG_TIMEZONE setting.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum Role {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum BookingStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+  COMPLETED
+}
+
+enum EnquiryStatus {
+  NEW
+  IN_PROGRESS
+  RESOLVED
+}
+
+enum ApplicationStatus {
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+}
+
+enum ProgrammeStatus {
+  DRAFT
+  PUBLISHED
+  CANCELLED
+  COMPLETED
+}
+
+enum ProjectStatus {
+  ONGOING
+  COMPLETED
+}
+
+enum ProgrammeRegistrationStatus {
+  PENDING
+  CONFIRMED
+  WAITLISTED
+  CANCELLED
+}
+
+// ---------------------------------------------------------------------------
+// Authentication / Users
+// ---------------------------------------------------------------------------
+
+model User {
+  id                  String     @id @default(cuid())
+  name                String?
+  email               String     @unique
+  emailVerified       DateTime?
+  image               String?
+  passwordHash        String?
+  phone               String?
+  organization        String?
+  role                Role       @default(USER)
+  status              UserStatus @default(ACTIVE)
+  mustChangePassword  Boolean    @default(false)
+  passwordChangedAt   DateTime?
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
+  lastLoginAt         DateTime?
+
+  accounts            Account[]
+  sessions            Session[]
+  bookings            Booking[]
+  messages            Message[]
+  messageThreads      MessageThread[]
+  notifications       Notification[]
+  enquiriesAssigned   Enquiry[]             @relation("EnquiryAssignee")
+  auditLogs           AuditLog[]
+  programmeRegs       ProgrammeRegistration[]
+  mediaAssets         MediaAsset[]
+  messagesAuthored    Message[]             @relation("MessageAuthor")
+  bookingsCreated     Booking[]             @relation("BookingCreator")
+  passwordResetTokens PasswordResetToken[]
+  applicationsStatusChanged Application[]              @relation("ApplicationStatusChanger")
+  applicationStatusChanges  ApplicationStatusHistory[] @relation("ApplicationHistoryChanger")
+
+  @@index([role])
+  @@index([status])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String   @unique
+  expires   DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// ---------------------------------------------------------------------------
+// Services & Facilities
+// ---------------------------------------------------------------------------
+
+model Service {
+  id             String   @id @default(cuid())
+  slug           String   @unique
+  name           String
+  category       String
+  shortDesc      String
+  description    String   @db.Text
+  imageUrl       String?
+  icon           String?  @default("Calendar")
+  basePrice      Decimal? @db.Decimal(10, 2)
+  priceUnit      String?  @default("per day")
+  currency       String   @default("NGN")
+  requiresApproval Boolean @default(true)
+  isVirtual      Boolean  @default(false)
+  cancellationPolicy String? @db.Text
+  terms          String?  @db.Text
+  operatingStart Int      @default(480)  // minutes from midnight (08:00)
+  operatingEnd   Int      @default(1080) // 18:00
+  minDuration    Int      @default(60)   // minutes
+  slotMinutes    Int      @default(30)
+  published      Boolean  @default(true)
+  displayOrder   Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  facilities  Facility[]
+  bookings    Booking[]
+  enquiries   Enquiry[]
+  applications Application[]
+
+  @@index([published])
+  @@index([category])
+}
+
+model Facility {
+  id          String   @id @default(cuid())
+  serviceId   String
+  name        String
+  description String?  @db.Text
+  capacity    Int?     // max attendees
+  capacityUnit String? @default("people")
+  imageUrl    String?
+  hourlyPrice Decimal? @db.Decimal(10, 2)
+  published   Boolean  @default(true)
+  displayOrder Int     @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  service    Service               @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  bookings   Booking[]
+  availability FacilityAvailability[]
+  blackouts  FacilityBlackout[]
+
+  @@index([serviceId])
+  @@index([published])
+}
+
+model FacilityAvailability {
+  id         String  @id @default(cuid())
+  facilityId String
+  dayOfWeek  Int     // 0 = Sunday ... 6 = Saturday
+  openMinute Int     // minutes from midnight
+  closeMinute Int
+  isClosed   Boolean @default(false)
+
+  facility Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+
+  @@unique([facilityId, dayOfWeek])
+}
+
+model FacilityBlackout {
+  id         String   @id @default(cuid())
+  facilityId String
+  startDate  DateTime
+  endDate    DateTime
+  reason     String?
+  createdAt  DateTime @default(now())
+
+  facility Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+
+  @@index([facilityId, startDate])
+}
+
+// ---------------------------------------------------------------------------
+// Bookings
+// ---------------------------------------------------------------------------
+
+model Booking {
+  id                String        @id @default(cuid())
+  reference         String        @unique
+  userId            String?
+  guestName         String?
+  guestEmail        String?
+  guestPhone        String?
+  organization      String?
+  serviceId         String
+  facilityId        String?
+  date              DateTime      // date-only, UTC midnight
+  startMinute       Int           // minutes from midnight
+  endMinute         Int
+  attendees         Int           @default(1)
+  purpose           String?       @db.Text
+  requirements      String?       @db.Text
+  preferredContact  String?       @default("email")
+  eventType         String?
+  status            BookingStatus @default(PENDING)
+  adminNote         String?       @db.Text
+  statusReason      String?       @db.Text
+  amountToPay       Decimal?      @db.Decimal(12, 2)
+  currency          String        @default("NGN")
+  accountDetails    String?       @db.Text
+  paymentInstructions String?     @db.Text
+  suggestedDate     DateTime?
+  suggestedStartMinute Int?
+  suggestedEndMinute   Int?
+  createdById       String?
+  submittedAt       DateTime      @default(now())
+  statusChangedAt   DateTime      @default(now())
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  user       User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdBy  User?     @relation("BookingCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  service    Service   @relation(fields: [serviceId], references: [id])
+  facility   Facility? @relation(fields: [facilityId], references: [id], onDelete: SetNull)
+  messages   Message[]
+
+  @@index([userId])
+  @@index([serviceId])
+  @@index([facilityId, date])
+  @@index([status])
+  @@index([date])
+}
+
+// ---------------------------------------------------------------------------
+// Enquiries / Messaging / Notifications
+// ---------------------------------------------------------------------------
+
+model Enquiry {
+  id          String        @id @default(cuid())
+  name        String
+  email       String
+  phone       String?
+  subject     String?
+  message     String        @db.Text
+  status      EnquiryStatus @default(NEW)
+  serviceId   String?
+  source      String        @default("contact")
+  assignedToId String?
+  adminReply  String?       @db.Text
+  resolvedAt  DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  service    Service? @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  assignedTo User?    @relation("EnquiryAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+model MessageThread {
+  id            String   @id @default(cuid())
+  userId        String
+  subject       String
+  lastMessageAt DateTime @default(now())
+  adminReadAt   DateTime?
+  userReadAt    DateTime?
+  createdAt     DateTime @default(now())
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages Message[]
+
+  @@index([userId])
+  @@index([lastMessageAt])
+}
+
+model Message {
+  id          String   @id @default(cuid())
+  userId      String
+  threadId    String?
+  bookingId   String?
+  subject     String
+  body        String   @db.Text
+  authorId    String?
+  readAt      DateTime?
+  createdAt   DateTime @default(now())
+
+  user    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  thread  MessageThread? @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  booking Booking?      @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  author  User?         @relation("MessageAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([threadId])
+  @@index([bookingId])
+  @@index([createdAt])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String   @default("system")
+  title     String
+  body      String?  @db.Text
+  link      String?
+  readAt    DateTime?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+}
+
+// ---------------------------------------------------------------------------
+// Content: Team, Programmes, Projects, About
+// ---------------------------------------------------------------------------
+
+model TeamMember {
+  id           String   @id @default(cuid())
+  name         String
+  role         String
+  phone        String?
+  bio          String?  @db.Text
+  photoUrl     String?
+  linkedinUrl  String?
+  displayOrder Int      @default(0)
+  published    Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([published, displayOrder])
+}
+
+model Programme {
+  id                   String          @id @default(cuid())
+  slug                 String          @unique
+  title                String
+  description          String          @db.Text
+  coverImageUrl        String?
+  startDate            DateTime
+  endDate              DateTime?
+  location             String?
+  format               String          @default("In-person") // In-person | Online | Hybrid
+  registrationDeadline DateTime?
+  registrationOpen     Boolean         @default(false)
+  registrationUrl      String?
+  status               ProgrammeStatus @default(DRAFT)
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+
+  registrations ProgrammeRegistration[]
+  applications  Application[]
+
+  @@index([status, startDate])
+}
+
+model ProgrammeRegistration {
+  id          String                      @id @default(cuid())
+  programmeId String
+  userId      String?
+  name        String
+  email       String
+  phone       String?
+  organization String?
+  status      ProgrammeRegistrationStatus @default(PENDING)
+  createdAt   DateTime                    @default(now())
+
+  programme Programme @relation(fields: [programmeId], references: [id], onDelete: Cascade)
+  user      User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@unique([programmeId, email])
+  @@index([programmeId])
+}
+
+model Project {
+  id           String        @id @default(cuid())
+  slug         String        @unique
+  title        String
+  summary      String        @db.Text
+  description  String?       @db.Text
+  focusAreas   String[]      @default([])
+  imageUrl     String?
+  category     String        @default("Impact")
+  status       ProjectStatus @default(ONGOING)
+  startDate    DateTime?
+  endDate      DateTime?
+  displayOrder Int           @default(0)
+  published    Boolean       @default(true)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([published, displayOrder])
+}
+
+model CoreValue {
+  id           String   @id @default(cuid())
+  title        String
+  description  String   @db.Text
+  displayOrder Int      @default(0)
+}
+
+model Objective {
+  id           String   @id @default(cuid())
+  text         String   @db.Text
+  displayOrder Int      @default(0)
+}
+
+model KeyActivity {
+  id           String   @id @default(cuid())
+  title        String
+  description  String   @db.Text
+  icon         String?  @default("Sparkles")
+  displayOrder Int      @default(0)
+}
+
+// ---------------------------------------------------------------------------
+// Applications
+// ---------------------------------------------------------------------------
+
+model Application {
+  id             String            @id @default(cuid())
+  reference      String            @unique
+  applicantName  String
+  applicantEmail String
+  phone          String?
+  organization   String?
+  programmeId    String?
+  serviceId      String?
+  title          String
+  summary        String            @db.Text
+  details        String?           @db.Text
+  status         ApplicationStatus @default(UNDER_REVIEW)
+  reviewNote     String?           @db.Text
+  statusChangedAt DateTime         @default(now())
+  statusChangedById String?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  programme      Programme? @relation(fields: [programmeId], references: [id], onDelete: SetNull)
+  service        Service?   @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  statusChangedBy User?     @relation("ApplicationStatusChanger", fields: [statusChangedById], references: [id], onDelete: SetNull)
+
+  statusHistory  ApplicationStatusHistory[]
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+model ApplicationStatusHistory {
+  id            String            @id @default(cuid())
+  applicationId String
+  fromStatus    ApplicationStatus?
+  toStatus      ApplicationStatus
+  changedById   String?
+  reason        String?           @db.Text
+  createdAt     DateTime          @default(now())
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  changedBy   User?        @relation("ApplicationHistoryChanger", fields: [changedById], references: [id], onDelete: SetNull)
+
+  @@index([applicationId])
+  @@index([createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Media / Settings / Audit
+// ---------------------------------------------------------------------------
+
+model MediaAsset {
+  id           String   @id @default(cuid())
+  filename     String
+  url          String
+  mimeType     String
+  size         Int
+  alt          String?
+  folder       String   @default("general")
+  uploadedById String?
+  createdAt    DateTime @default(now())
+
+  uploadedBy User? @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  @@index([folder])
+}
+
+model OrganizationSetting {
+  key       String   @id
+  value     String   @db.Text
+  category  String   @default("general")
+  updatedAt DateTime @updatedAt
+}
+
+model SocialMediaLink {
+  id           String   @id @default(cuid())
+  platform     String   @unique // linkedin | x | facebook | tiktok | whatsapp
+  label        String
+  url          String?
+  displayOrder Int      @default(0)
+  published    Boolean  @default(false)
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  actorId   String?
+  action    String
+  entity    String
+  entityId  String?
+  metadata  Json?
+  ip        String?
+  createdAt DateTime @default(now())
+
+  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([entity, entityId])
+  @@index([actorId])
+  @@index([createdAt])
+}
