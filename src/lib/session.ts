@@ -5,10 +5,13 @@ import { authOptions } from "./auth";
 import { prisma } from "./db";
 import { isAdmin, isSuperAdmin } from "./permissions";
 
+type SessionUser = { id?: string; role?: string; email?: string };
+
 export async function getCurrentUser(): Promise<User | null> {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return null;
-  const user = await prisma.user.findUnique({ where: { id: (session.user as any).id } });
+  const sessionUser = session?.user as SessionUser | undefined;
+  if (!sessionUser?.id) return null;
+  const user = await prisma.user.findUnique({ where: { id: sessionUser.id } });
   if (!user || user.status === "SUSPENDED") return null;
   return user;
 }

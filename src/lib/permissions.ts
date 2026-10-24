@@ -12,7 +12,8 @@ export function isSuperAdmin(role?: Role | string | null): boolean {
 
 export function hasRole(role: Role | string | null | undefined, allowed: (Role | string)[]): boolean {
   if (!role) return false;
-  return allowed.includes(role as any);
+  const roleStr = String(role);
+  return allowed.some((r) => String(r) === roleStr);
 }
 
 export function assignableRoles(actorRole?: Role | string | null): Role[] {

@@ -3,18 +3,22 @@ import { authOptions } from "./auth";
 import { prisma } from "./db";
 import { isSuperAdmin } from "./permissions";
 
+type SessionUser = { id?: string; role?: string; email?: string };
+
 export async function requireApiSuperAdmin() {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return null;
-  const user = await prisma.user.findUnique({ where: { id: (session.user as any).id } });
+  const sessionUser = session?.user as SessionUser | undefined;
+  if (!sessionUser?.id) return null;
+  const user = await prisma.user.findUnique({ where: { id: sessionUser.id } });
   if (!user || user.status === "SUSPENDED" || !isSuperAdmin(user.role)) return null;
   return user;
 }
 
 export async function requireApiAdmin() {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return null;
-  const user = await prisma.user.findUnique({ where: { id: (session.user as any).id } });
+  const sessionUser = session?.user as SessionUser | undefined;
+  if (!sessionUser?.id) return null;
+  const user = await prisma.user.findUnique({ where: { id: sessionUser.id } });
   if (!user || user.status === "SUSPENDED") return null;
   const role = user.role;
   if (role !== "ADMIN" && role !== "SUPER_ADMIN") return null;
