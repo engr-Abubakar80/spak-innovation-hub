@@ -18,7 +18,7 @@ export async function generateMetadata({
 }: {
   params: { slug: string };
 }): Promise<Metadata> {
-  const service = await prisma.service.findUnique({ where: { slug: params.slug } });
+  const service = await prisma.service.findUnique({ where: { slug: params.slug } }).catch(() => null);
   if (!service) return { title: "Service not found" };
   return { title: service.name, description: service.shortDesc };
 }
@@ -28,7 +28,7 @@ export default async function ServiceDetailPage({ params }: { params: { slug: st
     prisma.service.findUnique({
       where: { slug: params.slug },
       include: { facilities: { where: { published: true }, orderBy: { displayOrder: "asc" } } },
-    }),
+    }).catch(() => null),
     getSettings(),
     getCurrentUser(),
   ]);

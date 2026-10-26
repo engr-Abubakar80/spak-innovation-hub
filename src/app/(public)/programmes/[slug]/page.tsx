@@ -15,13 +15,13 @@ export async function generateMetadata({
 }: {
   params: { slug: string };
 }): Promise<Metadata> {
-  const programme = await prisma.programme.findUnique({ where: { slug: params.slug } });
+  const programme = await prisma.programme.findUnique({ where: { slug: params.slug } }).catch(() => null);
   if (!programme) return { title: "Programme not found" };
   return { title: programme.title, description: programme.description.slice(0, 160) };
 }
 
 export default async function ProgrammeDetailPage({ params }: { params: { slug: string } }) {
-  const programme = await prisma.programme.findUnique({ where: { slug: params.slug } });
+  const programme = await prisma.programme.findUnique({ where: { slug: params.slug } }).catch(() => null);
   if (!programme || programme.status === "DRAFT") notFound();
 
   const deadlinePassed =

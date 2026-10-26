@@ -20,7 +20,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function ServicesPage() {
   const [services, settings] = await Promise.all([
-    prisma.service.findMany({ where: { published: true }, orderBy: { displayOrder: "asc" } }),
+    prisma.service.findMany({ where: { published: true }, orderBy: { displayOrder: "asc" } }).catch(() => []),
     getSettings(),
   ]);
 

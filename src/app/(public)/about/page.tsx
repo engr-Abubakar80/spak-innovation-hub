@@ -20,10 +20,10 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function AboutPage() {
   const [settings, values, objectives, activities, projects] = await Promise.all([
     getSettings(),
-    prisma.coreValue.findMany({ orderBy: { displayOrder: "asc" } }),
-    prisma.objective.findMany({ orderBy: { displayOrder: "asc" } }),
-    prisma.keyActivity.findMany({ orderBy: { displayOrder: "asc" } }),
-    prisma.project.findMany({ where: { published: true }, orderBy: { displayOrder: "asc" } }),
+    prisma.coreValue.findMany({ orderBy: { displayOrder: "asc" } }).catch(() => []),
+    prisma.objective.findMany({ orderBy: { displayOrder: "asc" } }).catch(() => []),
+    prisma.keyActivity.findMany({ orderBy: { displayOrder: "asc" } }).catch(() => []),
+    prisma.project.findMany({ where: { published: true }, orderBy: { displayOrder: "asc" } }).catch(() => []),
   ]);
 
   return (

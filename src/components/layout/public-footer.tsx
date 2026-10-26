@@ -26,7 +26,7 @@ export async function PublicFooter() {
     prisma.socialMediaLink.findMany({
       where: { published: true, url: { not: null } },
       orderBy: { displayOrder: "asc" },
-    }),
+    }).catch(() => []),
   ]);
 
   const name = settings["org.shortName"];

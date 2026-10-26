@@ -27,12 +27,12 @@ export default async function HomePage() {
       where: { published: true },
       orderBy: { displayOrder: "asc" },
       take: 6,
-    }),
+    }).catch(() => []),
     prisma.programme.findMany({
       where: { status: "PUBLISHED", startDate: { gte: new Date() } },
       orderBy: { startDate: "asc" },
       take: 3,
-    }),
+    }).catch(() => []),
   ]);
 
   const benefits = [

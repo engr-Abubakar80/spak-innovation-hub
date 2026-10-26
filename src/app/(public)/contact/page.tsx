@@ -38,11 +38,11 @@ export default async function ContactPage() {
       where: { published: true },
       orderBy: { displayOrder: "asc" },
       select: { id: true, name: true },
-    }),
+    }).catch(() => []),
     prisma.socialMediaLink.findMany({
       where: { published: true, url: { not: null } },
       orderBy: { displayOrder: "asc" },
-    }),
+    }).catch(() => []),
   ]);
 
   const mapQuery = encodeURIComponent(settings["org.address"]);
