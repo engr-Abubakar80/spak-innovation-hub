@@ -1,15 +1,10 @@
 import Link from "next/link";
-import { Facebook, Linkedin, Mail, MapPin, MessageCircle, Phone, Twitter } from "lucide-react";
+import { Mail, MapPin, Phone } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
+import { getSocialLinks } from "@/lib/social";
 import { LogoMark } from "@/components/brand/logo";
-
-const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
-  linkedin: Linkedin,
-  x: Twitter,
-  facebook: Facebook,
-  whatsapp: MessageCircle,
-};
+import { SocialLinks } from "@/components/brand/social-links";
 
 const QUICK_LINKS = [
   { href: "/about", label: "About Us" },
@@ -37,7 +32,7 @@ export async function PublicFooter() {
       <div className="container-page grid gap-10 py-12 md:grid-cols-2 lg:grid-cols-4">
         <div>
           <div className="flex items-center gap-2.5">
-            <LogoMark className="bg-brand-600" />
+            <LogoMark logoUrl={settings["branding.logo"]} />
             <span className="text-base font-bold text-white">{name}</span>
           </div>
           <p className="mt-3 max-w-xs text-sm leading-relaxed text-slate-400">
@@ -88,30 +83,7 @@ export async function PublicFooter() {
 
         <div>
           <h2 className="text-sm font-semibold uppercase tracking-wide text-white">Follow Us</h2>
-          {socials.length === 0 ? (
-            <p className="mt-3 text-sm text-slate-500">
-              Social media links will be published soon.
-            </p>
-          ) : (
-            <ul className="mt-3 flex flex-wrap gap-2">
-              {socials.map((s) => {
-                const Icon = ICONS[s.platform] ?? MessageCircle;
-                return (
-                  <li key={s.id}>
-                    <a
-                      href={s.url as string}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label={s.label}
-                      className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-800 text-slate-300 hover:bg-brand-600 hover:text-white"
-                    >
-                      <Icon className="h-4 w-4" />
-                    </a>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
+          <SocialLinks links={getSocialLinks(socials)} variant="dark" className="mt-3" />
         </div>
       </div>
 

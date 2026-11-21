@@ -4,6 +4,7 @@ import { checkAvailability } from "@/lib/availability";
 import { timeToMinutes, generateBookingReference, minutesToTime, formatTimeLabel } from "@/lib/utils";
 import type { BookingCreateInput } from "@/lib/validation";
 import { sendBookingAcknowledgement, sendBookingStatusUpdate } from "@/lib/email";
+import { notifyBookingCreated, notifyBookingStatus } from "@/lib/notifications";
 
 export interface BookingActor {
   userId?: string | null;
@@ -140,6 +141,7 @@ export async function createBooking(
       requiresApproval: service.requiresApproval,
     }).catch(() => undefined);
   }
+  await notifyBookingCreated(booking, service.name);
 
   return booking;
 }
@@ -213,6 +215,7 @@ export async function changeBookingStatus(
       reason: updated.statusReason,
     }).catch(() => undefined);
   }
+  await notifyBookingStatus(updated, updated.service.name);
 
   return updated;
 }

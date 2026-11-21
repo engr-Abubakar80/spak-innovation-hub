@@ -4,6 +4,7 @@ import { rateLimit, getClientIp } from "@/lib/rate-limit";
 import { prisma } from "@/lib/db";
 import { sendEnquiryAcknowledgement } from "@/lib/email";
 import { getApiAdmin } from "@/lib/api";
+import { notifyAdmins } from "@/lib/notifications";
 
 export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => ({}));
@@ -30,11 +31,16 @@ export async function POST(request: NextRequest) {
       phone: data.phone || null,
       subject: data.subject || null,
       message: data.message,
-      source: "contact",
+      source: data.source || "contact",
       serviceId: data.serviceId || null,
     },
   });
   void sendEnquiryAcknowledgement({ to: enquiry.email, name: enquiry.name, subject: enquiry.subject }).catch(() => undefined);
+  await notifyAdmins({
+    title: "New enquiry received",
+    body: `${enquiry.name}: ${enquiry.subject || "General enquiry"}`,
+    link: `/admin/enquiries`,
+  });
   return NextResponse.json({ ok: true, id: enquiry.id }, { status: 201 });
 }
 

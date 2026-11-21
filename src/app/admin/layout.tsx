@@ -12,6 +12,8 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { UserMenu } from "@/components/layout/user-menu";
+import { Logo, LogoMark } from "@/components/brand/logo";
+import { getSettings } from "@/lib/settings";
 
 export default async function AdminLayout({
   children,
@@ -19,14 +21,19 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   await requireSuperAdmin();
+  const settings = await getSettings();
 
   return (
     <div className="flex min-h-screen bg-slate-50">
       <aside className="hidden w-64 shrink-0 border-r border-slate-200 bg-white lg:flex lg:flex-col">
         <div className="flex h-16 items-center border-b border-slate-200 px-5">
-          <Link href="/" className="text-sm font-bold text-ink">
-            SPAK Super Admin
-          </Link>
+          <Logo logoUrl={settings["branding.logo"]} showName={false} />
+          <div className="ml-3 flex flex-col leading-tight">
+            <span className="text-sm font-bold text-ink">SPAK</span>
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-brand-700">
+              Super Admin
+            </span>
+          </div>
         </div>
         <nav className="flex flex-1 flex-col gap-1 p-3">
           <Link href="/admin" className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-ink-soft hover:bg-slate-100">
@@ -73,6 +80,10 @@ export default async function AdminLayout({
       </aside>
       <div className="flex min-h-screen flex-1 flex-col">
         <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-3 border-b border-slate-200 bg-white/95 px-4 backdrop-blur lg:px-6">
+          <Link href="/dashboard" className="lg:hidden" aria-label="SPAK Innovation Hub home">
+            <LogoMark logoUrl={settings["branding.logo"]} />
+          </Link>
+          <span className="hidden text-sm font-semibold text-ink lg:block">SPAK Administration</span>
           <div className="flex items-center gap-2">
             <UserMenu />
           </div>

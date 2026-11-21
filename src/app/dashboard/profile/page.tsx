@@ -1,30 +1,61 @@
 import { requireUser } from "@/lib/session";
-import { PageHeader } from "@/components/layout/page-header";
+import { prisma } from "@/lib/db";
+import { PortalPageHeader } from "@/components/portal/portal-page-header";
+import { ProfileForm } from "@/components/portal/profile-form";
+import { initials, formatDate } from "@/lib/utils";
 
 export default async function ProfilePage() {
   const user = await requireUser();
+  const record = await prisma.user
+    .findUnique({ where: { id: user.id }, select: { createdAt: true } })
+    .catch(() => null);
+  const profile = {
+    name: user.name || "",
+    email: user.email,
+    phone: user.phone || "",
+    organization: user.organization || "",
+    createdAt: record?.createdAt.toISOString() ?? "",
+  };
+
   return (
     <div>
-      <PageHeader title="My Profile" description="View and manage your account details." />
-      <div className="card max-w-xl p-5">
-        <dl className="space-y-3 text-sm">
-          <div className="flex justify-between">
-            <dt className="text-ink-muted">Name</dt>
-            <dd className="font-medium text-ink">{user.name ?? "—"}</dd>
+      <PortalPageHeader
+        title="My Profile"
+        description="Manage your personal and professional information."
+      />
+      <div className="grid gap-5 lg:grid-cols-[260px_1fr]">
+        <section className="rounded-xl border border-slate-200 bg-white p-6 text-center shadow-sm">
+          <div className="mx-auto flex h-[76px] w-[76px] items-center justify-center rounded-full bg-blue-100 text-2xl font-bold text-blue-800">
+            {initials(profile.name)}
           </div>
-          <div className="flex justify-between">
-            <dt className="text-ink-muted">Email</dt>
-            <dd className="font-medium text-ink">{user.email}</dd>
+          <h2 className="mt-3 text-sm font-bold text-ink">{profile.name || "SPAK Member"}</h2>
+          <p className="text-[11px] text-slate-500">SPAK Hub Member</p>
+          <div className="mt-5 space-y-3 border-t border-slate-100 pt-4 text-left text-[11px] text-slate-500">
+            <div>
+              EMAIL
+              <b className="mt-0.5 block break-all text-[11px] text-ink">{profile.email}</b>
+            </div>
+            <div>
+              PHONE
+              <b className="mt-0.5 block text-[11px] text-ink">{profile.phone || "—"}</b>
+            </div>
+            <div>
+              MEMBER SINCE
+              <b className="mt-0.5 block text-[11px] text-ink">
+                {profile.createdAt ? formatDate(profile.createdAt, { month: "long", year: "numeric" }) : "—"}
+              </b>
+            </div>
           </div>
-          <div className="flex justify-between">
-            <dt className="text-ink-muted">Phone</dt>
-            <dd className="font-medium text-ink">{user.phone ?? "—"}</dd>
+        </section>
+        <section className="rounded-xl border border-slate-200 bg-white shadow-sm">
+          <div className="border-b border-slate-200 px-5 py-4">
+            <h2 className="text-sm font-semibold text-ink">Personal & Professional Details</h2>
+            <p className="mt-0.5 text-[11px] text-slate-500">Keep your account information up to date.</p>
           </div>
-          <div className="flex justify-between">
-            <dt className="text-ink-muted">Role</dt>
-            <dd className="font-medium text-ink">{user.role.toLowerCase()}</dd>
+          <div className="p-5">
+            <ProfileForm profile={profile} />
           </div>
-        </dl>
+        </section>
       </div>
     </div>
   );

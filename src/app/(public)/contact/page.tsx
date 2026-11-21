@@ -1,18 +1,11 @@
 import type { Metadata } from "next";
-import {
-  Clock,
-  Facebook,
-  Linkedin,
-  Mail,
-  MapPin,
-  MessageCircle,
-  Phone,
-  Twitter,
-} from "lucide-react";
+import { Clock, Mail, MapPin, Phone } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
+import { getSocialLinks } from "@/lib/social";
 import { PageHeader } from "@/components/layout/page-header";
 import { ContactForm } from "@/components/public/contact-form";
+import { SocialLinks } from "@/components/brand/social-links";
 
 export const dynamic = "force-dynamic";
 
@@ -23,13 +16,6 @@ export async function generateMetadata(): Promise<Metadata> {
       "Contact SPAK Innovation Hub in Kano, Nigeria — address, email, phone, operating hours and enquiry form.",
   };
 }
-
-const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
-  linkedin: Linkedin,
-  x: Twitter,
-  facebook: Facebook,
-  whatsapp: MessageCircle,
-};
 
 export default async function ContactPage() {
   const [settings, services, socials] = await Promise.all([
@@ -87,29 +73,14 @@ export default async function ContactPage() {
               </li>
             </ul>
 
-            {socials.length > 0 && (
-              <div className="mt-6 border-t border-slate-100 pt-5">
-                <p className="text-sm font-semibold text-ink">Follow us</p>
-                <ul className="mt-3 flex flex-wrap gap-2">
-                  {socials.map((s) => {
-                    const Icon = ICONS[s.platform] ?? MessageCircle;
-                    return (
-                      <li key={s.id}>
-                        <a
-                          href={s.url as string}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          aria-label={s.label}
-                          className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-ink-soft hover:bg-brand-700 hover:text-white"
-                        >
-                          <Icon className="h-4 w-4" />
-                        </a>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            )}
+            <div className="mt-6 border-t border-slate-100 pt-5">
+              <p className="text-sm font-semibold text-ink">Follow us</p>
+              <SocialLinks
+                links={getSocialLinks(socials)}
+                variant="light"
+                className="mt-3"
+              />
+            </div>
           </div>
 
           <div className="card overflow-hidden">

@@ -26,50 +26,33 @@ export default async function DashboardLayout({
   const user = await getCurrentUser();
   if (!user) redirect("/login?callbackUrl=/dashboard");
 
+  const [settings, pending, messages, notifications] = await Promise.all([
+    getSettings(),
+    prisma.booking.count({ where: { userId: user.id, status: "PENDING" } }).catch(() => 0),
+    prisma.message
+      .count({
+        where: {
+          userId: user.id,
+          authorId: { not: user.id },
+          readAt: null,
+        },
+      })
+      .catch(() => 0),
+    prisma.notification.count({ where: { userId: user.id, readAt: null } }).catch(() => 0),
+  ]);
+
   return (
-    <div className="flex min-h-screen bg-slate-50">
-      <aside className="hidden w-64 shrink-0 border-r border-slate-200 bg-white lg:flex lg:flex-col">
-        <div className="flex h-16 items-center gap-2 border-b border-slate-200 px-5">
-          <Link href="/" className="text-sm font-bold text-ink">
-            SPAK Innovation Hub
-          </Link>
-        </div>
-        <nav className="flex flex-1 flex-col gap-1 p-3">
-          {nav.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-ink-soft hover:bg-slate-100"
-            >
-              <item.icon className="h-4 w-4" aria-hidden />
-              {item.label}
-            </Link>
-          ))}
-          {isAdmin(user.role) && (
-            <Link
-              href="/admin"
-              className="mt-2 flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-brand-800 hover:bg-brand-50"
-            >
-              <Shield className="h-4 w-4" aria-hidden />
-              Admin Dashboard
-            </Link>
-          )}
-        </nav>
-        <div className="border-t border-slate-200 p-3 text-xs text-ink-muted">
-          Signed in as {user.name}
-        </div>
-      </aside>
-      <div className="flex min-h-screen flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-3 border-b border-slate-200 bg-white/95 px-4 backdrop-blur lg:px-6">
-          <Link href="/" className="lg:hidden">
-            SPAK
-          </Link>
-          <div className="flex items-center gap-2">
-            <UserMenu />
-          </div>
-        </header>
-        <main className="flex-1 p-4 sm:p-6">{children}</main>
-      </div>
-    </div>
+    <PortalShell
+      logoUrl={settings["branding.logo"]}
+      user={{
+        name: user.name || user.email || "SPAK Member",
+        email: user.email,
+        role: user.role,
+        isAdmin: isAdmin(user.role),
+      }}
+      counts={{ pending, messages, notifications }}
+    >
+      {children}
+    </PortalShell>
   );
 }

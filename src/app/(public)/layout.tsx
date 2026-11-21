@@ -13,6 +13,7 @@ export default async function PublicLayout({
       <PublicHeader
         name={settings["org.shortName"]}
         tagline={settings["org.tagline"]}
+        logoUrl={settings["branding.logo"]}
       />
       <main id="main" className="flex-1">
         {children}

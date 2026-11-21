@@ -72,6 +72,8 @@ export const profileUpdateSchema = z.object({
   organization: z.string().trim().max(200).optional().or(z.literal("")),
 });
 
+export type ProfileUpdateInput = z.infer<typeof profileUpdateSchema>;
+
 export const changePasswordSchema = z
   .object({
     currentPassword: z.string().min(1, "Enter your current password"),
@@ -141,9 +143,12 @@ export const enquirySchema = z.object({
   phone: phoneString.optional().or(z.literal("")),
   subject: z.string().trim().max(200).optional().or(z.literal("")),
   serviceId: z.string().optional().or(z.literal("")),
+  source: z.enum(["contact", "portal"]).optional(),
   message: z.string().trim().min(10, "Please describe your enquiry").max(4000),
   honeypot: z.string().max(0).optional().or(z.literal("")),
 });
+
+export type EnquiryInput = z.infer<typeof enquirySchema>;
 
 export const enquiryUpdateSchema = z.object({
   status: z.enum(["NEW", "IN_PROGRESS", "RESOLVED"]).optional(),
@@ -244,7 +249,7 @@ export const projectSchema = z.object({
 });
 
 export const socialLinkSchema = z.object({
-  platform: z.enum(["linkedin", "x", "facebook", "tiktok", "whatsapp"]),
+  platform: z.enum(["linkedin", "x", "instagram", "facebook", "tiktok", "whatsapp"]),
   label: z.string().trim().min(1).max(80),
   url: z
     .string()

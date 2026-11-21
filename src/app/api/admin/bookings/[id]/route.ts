@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
+<<<<<<< HEAD
 import type { BookingStatus } from "@prisma/client";
+=======
+>>>>>>> 41894b2 (User profile and Logo)
 import { requireApiSuperAdmin } from "@/lib/server-auth";
 import { recordAudit } from "@/lib/audit";
 import { prisma } from "@/lib/db";
 import { sendBookingStatusUpdate } from "@/lib/email";
+import { notifyBookingStatus, notifyPaymentDetails } from "@/lib/notifications";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +32,10 @@ export async function PATCH(
   const suggestedStartMinute = typeof body.suggestedTime === "string" && body.suggestedTime ? parseTimeToMinutes(body.suggestedTime) : null;
 
   try {
+    const previous = await prisma.booking.findUnique({
+      where: { id: params.id },
+      select: { status: true },
+    });
     const booking = await prisma.booking.update({
       where: { id: params.id },
       data: {
@@ -61,6 +69,12 @@ export async function PATCH(
       date: booking.date ? new Date(booking.date).toISOString().slice(0, 10) : "",
       reason: reason || undefined,
     }).catch(() => undefined);
+    }
+    if (previous && previous.status !== booking.status) {
+      await notifyBookingStatus(booking, booking.service?.name || "Service");
+    }
+    if (amountToPay !== null || accountDetails || paymentInstructions) {
+      await notifyPaymentDetails(booking, booking.service?.name || "Service");
     }
     return NextResponse.json(booking);
   } catch (err: Error | unknown) {

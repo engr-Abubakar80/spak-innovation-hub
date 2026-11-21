@@ -7,11 +7,7 @@ import type { AdminBooking } from "@/components/admin/admin-booking-manager";
 
 export default async function DashboardBookingsPage() {
   const user = await requireUser();
-  const bookings = await prisma.booking.findMany({
-    where: { userId: user.id },
-    include: { service: { select: { name: true } }, facility: { select: { name: true } } },
-    orderBy: { submittedAt: "desc" },
-  });
+  const bookings = await getPortalBookings(user.id);
   return (
     <div>
       <PageHeader title="My bookings" description="Track your booking requests and payment details from the admin." />

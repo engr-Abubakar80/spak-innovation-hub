@@ -61,6 +61,15 @@ export function toDateOnly(value: Date | string): Date {
   return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
 }
 
+export function initials(name?: string | null): string {
+  const parts = (name || "SPAK Member")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2);
+  return parts.map((part) => part[0]?.toUpperCase() ?? "").join("") || "SM";
+}
+
 export function slugify(input: string): string {
   return input
     .toLowerCase()

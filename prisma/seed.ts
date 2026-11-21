@@ -25,17 +25,31 @@ async function main() {
   }
 
   const socials = [
-    { platform: "linkedin", label: "LinkedIn", displayOrder: 1 },
-    { platform: "x", label: "X", displayOrder: 2 },
-    { platform: "facebook", label: "Facebook", displayOrder: 3 },
-    { platform: "tiktok", label: "TikTok", displayOrder: 4 },
-    { platform: "whatsapp", label: "WhatsApp Channel", displayOrder: 5 },
+    { platform: "x", label: "X", displayOrder: 1, url: "https://x.com/HubSpak/" },
+    {
+      platform: "instagram",
+      label: "Instagram",
+      displayOrder: 2,
+      url: "https://www.instagram.com/spak_hub?gwpx=emR6anl1dDFmdGIw",
+    },
+    {
+      platform: "linkedin",
+      label: "LinkedIn",
+      displayOrder: 3,
+      url: "https://www.linkedin.com/in/spak-hub-undefined-179a60434?utm_source=share_via&utm_content=profile&utm_medium=member_android",
+    },
+    {
+      platform: "facebook",
+      label: "Facebook",
+      displayOrder: 4,
+      url: "https://www.facebook.com/profile.php?id=61594524221813",
+    },
   ];
   for (const s of socials) {
     await prisma.socialMediaLink.upsert({
       where: { platform: s.platform },
-      update: {},
-      create: { ...s, url: null, published: false },
+      update: { label: s.label, displayOrder: s.displayOrder, url: s.url, published: true },
+      create: { ...s, published: true },
     });
   }
 

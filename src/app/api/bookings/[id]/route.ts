@@ -3,6 +3,7 @@ import { changeBookingStatus, cancelBookingAsUser } from "@/services/booking-ser
 import { bookingStatusSchema, bookingCancelSchema } from "@/lib/validation";
 import { getApiAdmin, getApiUser } from "@/lib/api";
 import { recordAudit } from "@/lib/audit";
+import { createNotification } from "@/lib/notifications";
 
 export async function PATCH(
   request: NextRequest,
@@ -46,6 +47,13 @@ export async function PATCH(
   }
   try {
     const booking = await cancelBookingAsUser(params.id, user.id, parsedCancel.data.reason);
+    await createNotification({
+      userId: user.id,
+      type: "booking",
+      title: "Your booking was cancelled",
+      body: `${booking.reference} was cancelled.${parsedCancel.data.reason ? ` ${parsedCancel.data.reason}` : ""}`,
+      link: `/dashboard/bookings/${booking.id}`,
+    });
     return NextResponse.json(booking);
   } catch (err: Error | unknown) {
     const error = err instanceof Error ? err : new Error(String(err));

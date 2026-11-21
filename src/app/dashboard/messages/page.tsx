@@ -1,36 +1,51 @@
-import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/session";
-import { PageHeader } from "@/components/layout/page-header";
-import { EmptyState } from "@/components/ui/empty-state";
-import { formatDate } from "@/lib/utils";
+import { prisma } from "@/lib/db";
+import { PortalPageHeader } from "@/components/portal/portal-page-header";
+import { MessagesInbox, type PortalThread } from "@/components/portal/messages-inbox";
 
 export default async function MessagesPage() {
   const user = await requireUser();
-  const messages = await prisma.message.findMany({
-    where: { userId: user.id },
-    orderBy: { createdAt: "desc" },
-  });
+  const rows = await prisma.messageThread
+    .findMany({
+      where: { userId: user.id },
+      orderBy: { lastMessageAt: "desc" },
+      include: {
+        messages: {
+          orderBy: { createdAt: "asc" },
+          include: { author: { select: { name: true } } },
+        },
+        _count: {
+          select: {
+            messages: {
+              where: { authorId: { not: user.id }, readAt: null },
+            },
+          },
+        },
+      },
+    })
+    .catch(() => []);
+  const threads: PortalThread[] = rows.map((thread) => ({
+    id: thread.id,
+    subject: thread.subject,
+    lastMessageAt: thread.lastMessageAt.toISOString(),
+    unread: thread._count.messages,
+    messages: thread.messages.map((message) => ({
+      id: message.id,
+      body: message.body,
+      authorId: message.authorId,
+      authorName: message.author?.name ?? null,
+      createdAt: message.createdAt.toISOString(),
+      readAt: message.readAt ? message.readAt.toISOString() : null,
+    })),
+  }));
+
   return (
     <div>
-      <PageHeader title="Messages" description="Messages from the SPAK Innovation Hub team." />
-      {messages.length === 0 ? (
-        <EmptyState title="No messages" description="You don't have any messages yet." />
-      ) : (
-        <div className="space-y-3">
-          {messages.map((m) => (
-            <div key={m.id} className="card p-4">
-              <div className="flex items-start justify-between">
-                <div>
-                  <h3 className="font-semibold text-ink">{m.subject}</h3>
-                  <p className="mt-1 text-sm text-ink-muted">{formatDate(m.createdAt)}</p>
-                </div>
-                {!m.readAt && <span className="text-xs font-medium text-brand-700">Unread</span>}
-              </div>
-              <p className="mt-2 whitespace-pre-wrap text-sm text-ink-soft">{m.body}</p>
-            </div>
-          ))}
-        </div>
-      )}
+      <PortalPageHeader
+        title="Messages"
+        description="Communicate with the SPAK Innovation Hub support team."
+      />
+      <MessagesInbox threads={threads} userId={user.id} />
     </div>
   );
 }

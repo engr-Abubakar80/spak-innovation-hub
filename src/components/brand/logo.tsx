@@ -2,61 +2,52 @@ import Link from "next/link";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 
+export const OFFICIAL_LOGO = "/brand/spak-logo.jpg";
+
 export function LogoMark({
   className,
   logoUrl,
+  imageClassName,
 }: {
   className?: string;
   logoUrl?: string | null;
+  imageClassName?: string;
 }) {
-  if (logoUrl) {
-    return (
-      <span
-        className={cn(
-          "flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white ring-1 ring-slate-200",
-          className,
-        )}
-        aria-hidden
-      >
-        <Image
-          src={logoUrl}
-          alt="Site logo"
-          width={36}
-          height={36}
-          className="h-9 w-9 object-contain"
-        />
-      </span>
-    );
-  }
   return (
     <span
       className={cn(
-        "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-700 font-bold text-white",
+        "inline-flex shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white p-1 ring-1 ring-slate-200",
         className,
       )}
-      aria-hidden
     >
-      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.2">
-        <path d="M12 3c-3 0-5 1.6-5 4 0 2 1.4 3 3 3.4C8.4 11 7 12.2 7 14c0 2.4 2 4 5 4s5-1.6 5-4c0-1.8-1.4-3-3.2-3.6C15.6 10 17 9 17 7c0-2.4-2-4-5-4Z" strokeLinejoin="round" />
-      </svg>
+      <Image
+        src={logoUrl || OFFICIAL_LOGO}
+        alt="SPAK Innovation Hub logo"
+        width={533}
+        height={229}
+        priority
+        className={cn("h-8 w-auto max-w-full object-contain", imageClassName)}
+      />
     </span>
   );
 }
 
 export function Logo({
   href = "/",
-  name,
+  name = "SPAK Innovation Hub",
   tagline,
   className,
   onNavigate,
   logoUrl,
+  showName = true,
 }: {
   href?: string;
-  name: string;
+  name?: string;
   tagline?: string;
   className?: string;
   onNavigate?: () => void;
   logoUrl?: string | null;
+  showName?: boolean;
 }) {
   return (
     <Link
@@ -66,12 +57,14 @@ export function Logo({
       aria-label={`${name} home`}
     >
       <LogoMark logoUrl={logoUrl} />
-      <span className="flex flex-col leading-tight">
-        <span className="text-sm font-bold text-ink sm:text-base">{name}</span>
-        {tagline && (
-          <span className="hidden text-[11px] font-medium text-brand-700 sm:block">{tagline}</span>
-        )}
-      </span>
+      {showName && (
+        <span className="flex flex-col leading-tight">
+          <span className="text-sm font-bold text-ink sm:text-base">{name}</span>
+          {tagline && (
+            <span className="hidden text-[11px] font-medium text-brand-700 sm:block">{tagline}</span>
+          )}
+        </span>
+      )}
     </Link>
   );
 }

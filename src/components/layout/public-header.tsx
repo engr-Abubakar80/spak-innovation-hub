@@ -19,7 +19,15 @@ const NAV = [
   { href: "/contact", label: "Contact" },
 ];
 
-export function PublicHeader({ name, tagline }: { name: string; tagline?: string }) {
+export function PublicHeader({
+  name,
+  tagline,
+  logoUrl,
+}: {
+  name: string;
+  tagline?: string;
+  logoUrl?: string | null;
+}) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const { data: session, status } = useSession();
@@ -31,7 +39,7 @@ export function PublicHeader({ name, tagline }: { name: string; tagline?: string
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
       <div className="container-page flex h-16 items-center justify-between gap-4">
-        <Logo name={name} tagline={tagline} />
+        <Logo name={name} tagline={tagline} logoUrl={logoUrl} />
 
         <nav aria-label="Main" className="hidden items-center gap-1 lg:flex">
           {NAV.map((item) => {
