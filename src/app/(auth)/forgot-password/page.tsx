@@ -36,7 +36,7 @@ export default function ForgotPasswordPage() {
         <Logo name="SPAK Innovation Hub" href="/" />
         <h1 className="mt-5 text-xl font-bold text-ink">Reset your password</h1>
         <p className="mt-1 text-center text-sm text-ink-muted">
-          Enter the email address associated with your account. If that address exists, we'll send
+          Enter the email address associated with your account. If that address exists, we&apos;ll send
           you a link to reset your password.
         </p>
       </div>

@@ -4,7 +4,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
 export default async function AdminSettingsPage() {
-  const user = await requireAdmin();
+  await requireAdmin();
   const settings = await getSettings();
   return (
     <div>

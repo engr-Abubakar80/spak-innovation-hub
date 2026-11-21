@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
   const url = request.nextUrl;
   const status = url.searchParams.get("status") as BookingStatus | null;
   const q = url.searchParams.get("q") || "";
-  const where: any = {};
+  const where: { status?: BookingStatus; OR?: Array<{ reference?: { contains: string; mode: string }; guestName?: { contains: string; mode: string }; guestEmail?: { contains: string; mode: string } }> } = {};
   if (status) where.status = status;
   if (q) {
     where.OR = [

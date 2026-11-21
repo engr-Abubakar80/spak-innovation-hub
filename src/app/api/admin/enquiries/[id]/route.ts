@@ -10,7 +10,7 @@ export async function PATCH(
   const body = await request.json().catch(() => ({}));
   const admin = await getApiAdmin();
   if (!admin) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  const data: any = {};
+  const data: { status?: string; adminReply?: string; assignedToId?: string | null; resolvedAt?: Date } = {};
   if (body.status) data.status = body.status;
   if (body.adminReply !== undefined) data.adminReply = body.adminReply;
   if (body.assignedToId !== undefined) data.assignedToId = body.assignedToId;

@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
   const query = searchParams.get("q") || undefined;
   const filter = searchParams.get("filter") || "all";
 
-  const where: any = {};
+  const where: { OR?: Array<{ subject?: { contains: string; mode: string }; user?: { name?: { contains: string; mode: string } | { email?: { contains: string; mode: string } } } }>; adminReadAt?: null } = {};
   if (query) {
     where.OR = [
       { subject: { contains: query, mode: "insensitive" } },

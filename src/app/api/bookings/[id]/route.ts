@@ -25,10 +25,12 @@ export async function PATCH(
         metadata: { reference: booking.reference, reason: parsed.data.reason },
       });
       return NextResponse.json(booking);
-    } catch (err: any) {
+    } catch (err: Error | unknown) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      const status = (err as { status?: number }).status || 500;
       return NextResponse.json(
-        { error: err.message || "Could not update booking" },
-        { status: err.status || 500 },
+        { error: error.message || "Could not update booking" },
+        { status },
       );
     }
   }
@@ -45,10 +47,12 @@ export async function PATCH(
   try {
     const booking = await cancelBookingAsUser(params.id, user.id, parsedCancel.data.reason);
     return NextResponse.json(booking);
-  } catch (err: any) {
+  } catch (err: Error | unknown) {
+    const error = err instanceof Error ? err : new Error(String(err));
+    const status = (err as { status?: number }).status || 500;
     return NextResponse.json(
-      { error: err.message || "Could not cancel booking" },
-      { status: err.status || 500 },
+      { error: error.message || "Could not cancel booking" },
+      { status },
     );
   }
 }

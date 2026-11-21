@@ -38,8 +38,9 @@ export function EditableContentManager({ settings }: { settings: Setting[] }) {
       if (!res.ok) throw new Error(data.error || "Could not save content");
       setNotice("Content updated. Changes apply across the site.");
       router.refresh();
-    } catch (err: any) {
-      setError(err.message || "Could not save content");
+    } catch (err: Error | unknown) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      setError(error.message || "Could not save content");
     } finally {
       setSaving(false);
     }

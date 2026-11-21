@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { PageHeader } from "@/components/layout/page-header";
 import { BookingStatusBadge } from "@/components/ui/badge";
 import { formatDate, formatTimeLabel } from "@/lib/utils";
+import type { AdminBooking } from "@/components/admin/admin-booking-manager";
 
 export default async function DashboardBookingsPage() {
   const user = await requireUser();
@@ -18,7 +19,7 @@ export default async function DashboardBookingsPage() {
         {bookings.length === 0 ? (
           <div className="rounded-lg border border-slate-200 bg-white p-6 text-sm text-ink-muted">You have no bookings yet.</div>
         ) : (
-          bookings.map((b: any) => (
+          bookings.map((b: AdminBooking) => (
             <div key={b.id} className="rounded-lg border border-slate-200 bg-white p-5">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>

@@ -4,15 +4,11 @@ import {
   CalendarCheck,
   LayoutDashboard,
   Mail,
-  Settings,
   Shield,
   UserCircle,
-  LogOut,
 } from "lucide-react";
 import { getCurrentUser } from "@/lib/session";
 import { isAdmin } from "@/lib/permissions";
-import { Button } from "@/components/ui/button";
-import { signOut } from "next-auth/react";
 import { UserMenu } from "@/components/layout/user-menu";
 
 const nav = [

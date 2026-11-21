@@ -1,7 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireApiUser } from "@/lib/api";
-import { requireApiSuperAdmin } from "@/lib/server-auth";
 
 export const dynamic = "force-dynamic";
 

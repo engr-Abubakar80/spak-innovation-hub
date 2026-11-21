@@ -47,7 +47,7 @@ export default function SignupPage() {
         </span>
         <h1 className="mt-4 text-xl font-bold text-ink">Check your email</h1>
         <p className="mt-2 text-sm text-ink-muted">
-          We've sent a verification link to the email address you provided. Please verify your email
+          We&apos;ve sent a verification link to the email address you provided. Please verify your email
           to complete your registration.
         </p>
         <Link href="/login" className="mt-6 inline-block">

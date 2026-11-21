@@ -1,9 +1,6 @@
 import { prisma } from "@/lib/db";
 import { requireSuperAdmin } from "@/lib/session";
 import { PageHeader } from "@/components/layout/page-header";
-import { BookingStatusBadge } from "@/components/ui/badge";
-import { TableWrapper, Table, THead, TH, TBody, TR, TD } from "@/components/ui/table";
-import { formatDate, formatTimeLabel } from "@/lib/utils";
 import { AdminBookingManager } from "@/components/admin/admin-booking-manager";
 
 export const dynamic = "force-dynamic";

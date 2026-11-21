@@ -41,8 +41,9 @@ export function BookingActions({
       setNeedsReason(null);
       setReason("");
       router.refresh();
-    } catch (err: any) {
-      setError(err.message || "Could not update the booking");
+    } catch (err: Error | unknown) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      setError(error.message || "Could not update the booking");
     } finally {
       setBusy(null);
     }

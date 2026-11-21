@@ -66,7 +66,7 @@ export async function PATCH(
   const existing = await prisma.application.findUnique({ where: { id: params.id } });
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const data: any = {};
+  const data: Record<string, string | null | number | boolean | Date | undefined> = {};
   for (const key of ["applicantName", "applicantEmail", "phone", "organization", "programmeId", "serviceId", "title", "summary", "details", "reviewNote"] as const) {
     if (body[key] !== undefined) data[key] = body[key] === "" ? null : body[key];
   }

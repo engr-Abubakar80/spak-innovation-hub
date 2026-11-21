@@ -115,8 +115,9 @@ export function ApplicationsManager({
       );
       setNotice(`Application ${app.reference} marked as ${status}.`);
       router.refresh();
-    } catch (err: any) {
-      setError(err.message || "Could not update application");
+    } catch (err: Error | unknown) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      setError(error.message || "Could not update application");
     } finally {
       setBusyId(null);
     }
@@ -133,8 +134,9 @@ export function ApplicationsManager({
       setItems((prev) => prev.filter((a) => a.id !== app.id));
       setNotice(`Application ${app.reference} deleted.`);
       router.refresh();
-    } catch (err: any) {
-      setError(err.message || "Could not delete application");
+    } catch (err: Error | unknown) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      setError(error.message || "Could not delete application");
     } finally {
       setBusyId(null);
     }
@@ -189,8 +191,9 @@ export function ApplicationsManager({
       setEditing(null);
       setNotice(editing ? "Application updated." : "Application created.");
       router.refresh();
-    } catch (err: any) {
-      setError(err.message || "Could not save application");
+    } catch (err: Error | unknown) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      setError(error.message || "Could not save application");
     } finally {
       setSaving(false);
     }

@@ -25,7 +25,7 @@ export default async function TermsPage() {
         <p>{settings["booking.cancellationPolicy"]}</p>
         <h2>Acceptable use</h2>
         <p>
-          Users agree not to misuse the platform, submit false information, or use the Hub's
+          Users agree not to misuse the platform, submit false information, or use the Hub&apos;s
           facilities for unlawful purposes. Accounts found in breach may be suspended.
         </p>
       </div>

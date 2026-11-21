@@ -23,12 +23,6 @@ type User = {
 
 const ROLES = ["USER", "ADMIN", "SUPER_ADMIN"] as const;
 
-const roleTone: Record<string, "neutral" | "brand" | "warning"> = {
-  USER: "neutral",
-  ADMIN: "brand",
-  SUPER_ADMIN: "warning",
-};
-
 const emptyForm = {
   name: "",
   email: "",

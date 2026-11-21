@@ -4,7 +4,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { BookingStatusBadge } from "@/components/ui/badge";
 import { TableWrapper, Table, THead, TH, TBody, TR, TD } from "@/components/ui/table";
-import { CalendarCheck, Clock, XCircle, CheckCircle2, Mail } from "lucide-react";
+import { CalendarCheck, Clock, CheckCircle2, Mail } from "lucide-react";
 import { formatDate, formatTimeLabel } from "@/lib/utils";
 
 export default async function DashboardPage() {

@@ -62,8 +62,9 @@ export async function POST(request: NextRequest) {
       metadata: { url: saved.url },
     });
     return NextResponse.json({ logoUrl: saved.url });
-  } catch (err: any) {
+  } catch (err: Error | unknown) {
+    const error = err instanceof UploadError ? err : (err instanceof Error ? err : new Error(String(err)));
     const status = err instanceof UploadError ? err.status : 422;
-    return NextResponse.json({ error: err.message || "Upload failed" }, { status });
+    return NextResponse.json({ error: error.message || "Upload failed" }, { status });
   }
 }

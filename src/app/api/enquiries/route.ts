@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid enquiry details" }, { status: 422 });
   }
-  const { honeypot, ...data } = parsed.data as any;
+  const { honeypot, ...data } = parsed.data as { honeypot?: string; name: string; email: string; phone?: string; subject?: string; message: string; serviceId?: string };
   if (honeypot && honeypot.length > 0) {
     return NextResponse.json({ ok: true }, { status: 201 });
   }

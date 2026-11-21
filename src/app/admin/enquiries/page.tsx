@@ -6,7 +6,7 @@ import { TableWrapper, Table, THead, TH, TBody, TR, TD } from "@/components/ui/t
 import { formatDate } from "@/lib/utils";
 
 export default async function AdminEnquiriesPage() {
-  const user = await requireAdmin();
+  await requireAdmin();
   const enquiries = await prisma.enquiry.findMany({
     include: { service: { select: { name: true } } },
     orderBy: { createdAt: "desc" },

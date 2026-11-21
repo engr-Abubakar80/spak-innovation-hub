@@ -1,8 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { requireApiUser } from "@/lib/api";
-import { requireApiSuperAdmin } from "@/lib/server-auth";
 import { recordAudit } from "@/lib/audit";
 
 export const dynamic = "force-dynamic";

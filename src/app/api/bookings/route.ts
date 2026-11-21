@@ -28,10 +28,12 @@ export async function POST(request: NextRequest) {
   try {
     const booking = await createBooking(parsed.data, user ? { userId: user.id, name: user.name, email: user.email, phone: user.phone } : null);
     return NextResponse.json({ ok: true, reference: booking.reference, id: booking.id }, { status: 201 });
-  } catch (err: any) {
+  } catch (err: Error | unknown) {
+    const error = err instanceof Error ? err : new Error(String(err));
+    const status = (err as { status?: number }).status || 500;
     return NextResponse.json(
-      { error: err.message || "Booking could not be created" },
-      { status: err.status || 500 },
+      { error: error.message || "Booking could not be created" },
+      { status },
     );
   }
 }

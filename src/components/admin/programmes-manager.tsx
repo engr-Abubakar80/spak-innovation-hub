@@ -135,8 +135,9 @@ export function ProgrammesManager({ programmes }: { programmes: AdminProgramme[]
       setFile(null);
       setNotice(editing ? "Programme updated." : "Programme created.");
       router.refresh();
-    } catch (err: any) {
-      setError(err.message || "Could not save programme");
+    } catch (err: Error | unknown) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      setError(error.message || "Could not save programme");
     } finally {
       setSaving(false);
     }
@@ -153,8 +154,9 @@ export function ProgrammesManager({ programmes }: { programmes: AdminProgramme[]
       setItems((prev) => prev.filter((x) => x.id !== p.id));
       setNotice("Programme deleted.");
       router.refresh();
-    } catch (err: any) {
-      setError(err.message || "Could not delete programme");
+    } catch (err: Error | unknown) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      setError(error.message || "Could not delete programme");
     } finally {
       setBusyId(null);
     }
@@ -173,8 +175,9 @@ export function ProgrammesManager({ programmes }: { programmes: AdminProgramme[]
       setItems((prev) => prev.map((x) => (x.id === p.id ? { ...x, status: next } : x)));
       setNotice(`Programme ${next === "PUBLISHED" ? "published" : "unpublished"}.`);
       router.refresh();
-    } catch (err: any) {
-      setError(err.message || "Could not update programme");
+    } catch (err: Error | unknown) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      setError(error.message || "Could not update programme");
     } finally {
       setBusyId(null);
     }

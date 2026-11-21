@@ -85,8 +85,9 @@ export function AdminBookingManager({ bookings }: { bookings: AdminBooking[] }) 
       if (!res.ok) throw new Error(data.error || "Could not update booking");
       setNotice("Booking updated. Account details and amount to pay are visible to the user.");
       router.refresh();
-    } catch (err: any) {
-      setError(err.message || "Could not update booking");
+    } catch (err: Error | unknown) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      setError(error.message || "Could not update booking");
     } finally {
       setBusy(false);
     }

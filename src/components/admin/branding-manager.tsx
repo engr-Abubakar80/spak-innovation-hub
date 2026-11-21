@@ -40,8 +40,9 @@ export function BrandingManager({ logoUrl }: { logoUrl: string | null }) {
       setFile(null);
       setNotice("Logo updated. It is now live across the public site.");
       router.refresh();
-    } catch (err: any) {
-      setError(err.message || "Could not upload the logo");
+    } catch (err: Error | unknown) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      setError(error.message || "Could not upload the logo");
     } finally {
       setSaving(false);
     }

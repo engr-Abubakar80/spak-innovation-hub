@@ -38,8 +38,9 @@ export function ChangePasswordForm() {
       setCurrent("");
       setNext("");
       setConfirm("");
-    } catch (err: any) {
-      setError(err.message || "Could not change password");
+    } catch (err: Error | unknown) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      setError(error.message || "Could not change password");
     } finally {
       setSaving(false);
     }

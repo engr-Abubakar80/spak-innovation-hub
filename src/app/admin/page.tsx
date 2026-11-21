@@ -5,7 +5,7 @@ import { StatCard } from "@/components/dashboard/stat-card";
 import { CalendarCheck, Users, Mail, ClipboardList } from "lucide-react";
 
 export default async function AdminOverviewPage() {
-  const user = await requireAdmin();
+  await requireAdmin();
   const [users, bookings, enquiries] = await Promise.all([
     prisma.user.count(),
     prisma.booking.count(),

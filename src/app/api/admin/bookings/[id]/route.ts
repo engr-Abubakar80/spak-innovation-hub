@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { changeBookingStatus } from "@/services/booking-service";
+import type { BookingStatus } from "@prisma/client";
 import { requireApiSuperAdmin } from "@/lib/server-auth";
 import { recordAudit } from "@/lib/audit";
 import { prisma } from "@/lib/db";
@@ -19,7 +19,7 @@ export async function PATCH(
   const body = await request.json().catch(() => ({}));
   const admin = await requireApiSuperAdmin();
   if (!admin) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  const status = body.status as any;
+  const status = body.status as BookingStatus;
   const reason = typeof body.reason === "string" ? body.reason : null;
   const amountToPay = body.amountToPay === null || body.amountToPay === undefined ? null : Number(body.amountToPay);
   const accountDetails = typeof body.accountDetails === "string" ? body.accountDetails : null;
@@ -63,8 +63,10 @@ export async function PATCH(
     }).catch(() => undefined);
     }
     return NextResponse.json(booking);
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message || "Could not update booking" }, { status: err.status || 500 });
+  } catch (err: Error | unknown) {
+    const error = err instanceof Error ? err : new Error(String(err));
+    const errStatus = (err as { status?: number }).status || 500;
+    return NextResponse.json({ error: error.message || "Could not update booking" }, { status: errStatus });
   }
 }
 

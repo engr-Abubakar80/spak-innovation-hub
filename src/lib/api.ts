@@ -25,7 +25,7 @@ export function unauthorized(message = "You must be signed in.") {
 export async function getApiUser(): Promise<User | null> {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return null;
-  const user = await prisma.user.findUnique({ where: { id: (session.user as any).id } });
+  const user = await prisma.user.findUnique({ where: { id: (session.user as { id?: string }).id as string } });
   if (!user || user.status === "SUSPENDED") return null;
   return user;
 }
