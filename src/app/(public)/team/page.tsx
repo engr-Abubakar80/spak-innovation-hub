@@ -26,7 +26,7 @@ export default async function TeamPage() {
   const members = await prisma.teamMember.findMany({
     where: { published: true },
     orderBy: { displayOrder: "asc" },
-  });
+  }).catch(() => []);
 
   return (
     <div className="container-page py-10">

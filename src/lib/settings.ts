@@ -46,9 +46,13 @@ export type SettingsMap = Record<string, string>;
 
 /** Load all settings, merged over the verified defaults. */
 export async function getSettings(): Promise<SettingsMap> {
-  const rows = await prisma.organizationSetting.findMany();
   const map: SettingsMap = { ...DEFAULT_SETTINGS };
-  for (const row of rows) map[row.key] = row.value;
+  try {
+    const rows = await prisma.organizationSetting.findMany();
+    for (const row of rows) map[row.key] = row.value;
+  } catch (error) {
+    console.warn("Could not load organization settings; using defaults.", error);
+  }
   return map;
 }
 

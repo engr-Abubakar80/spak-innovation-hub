@@ -4,6 +4,8 @@ import "./globals.css";
 import { Providers } from "@/components/providers";
 import { getSettings } from "@/lib/settings";
 
+export const dynamic = "force-dynamic";
+
 const sans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-sans",

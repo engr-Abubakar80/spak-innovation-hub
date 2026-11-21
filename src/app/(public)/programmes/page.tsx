@@ -21,12 +21,12 @@ export default async function ProgrammesPage() {
     prisma.programme.findMany({
       where: { status: "PUBLISHED", startDate: { gte: now } },
       orderBy: { startDate: "asc" },
-    }),
+    }).catch(() => []),
     prisma.programme.findMany({
       where: { status: { in: ["PUBLISHED", "COMPLETED"] }, startDate: { lt: now } },
       orderBy: { startDate: "desc" },
       take: 12,
-    }),
+    }).catch(() => []),
   ]);
 
   return (
