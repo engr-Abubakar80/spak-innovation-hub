@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma, type ApplicationStatus } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { requireApiSuperAdmin } from "@/lib/server-auth";
@@ -32,14 +33,14 @@ export async function GET(request: NextRequest) {
   const status = searchParams.get("status") || undefined;
   const query = searchParams.get("q") || undefined;
 
-  const where: { status?: string; OR?: Array<{ applicantName?: { contains: string; mode: string }; applicantEmail?: { contains: string; mode: string }; title?: { contains: string; mode: string }; reference?: { contains: string; mode: string } }> } = {};
+  const where: Prisma.ApplicationWhereInput = {};
   if (status && status !== "all" && status !== "All") {
     const map: Record<string, string> = {
       Approved: "APPROVED",
       Rejected: "REJECTED",
       "Under Review": "UNDER_REVIEW",
     };
-    where.status = map[status] || status;
+    where.status = (map[status] || status) as ApplicationStatus;
   }
   if (query) {
     where.OR = [

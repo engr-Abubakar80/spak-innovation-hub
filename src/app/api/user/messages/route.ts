@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
-import { requireApiUser } from "@/lib/api";
-=======
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
@@ -51,7 +46,6 @@ export async function POST(request: NextRequest) {
   });
   return NextResponse.json({ message, threadId: thread.id }, { status: 201 });
 }
->>>>>>> 41894b2 (User profile and Logo)
 
 export const dynamic = "force-dynamic";
 

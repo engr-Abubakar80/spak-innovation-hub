@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { requireApiSuperAdmin } from "@/lib/server-auth";
 
@@ -16,7 +17,7 @@ export async function GET(request: NextRequest) {
   const query = searchParams.get("q") || undefined;
   const filter = searchParams.get("filter") || "all";
 
-  const where: { OR?: Array<{ subject?: { contains: string; mode: string }; user?: { name?: { contains: string; mode: string } | { email?: { contains: string; mode: string } } } }>; adminReadAt?: null } = {};
+  const where: Prisma.MessageThreadWhereInput = {};
   if (query) {
     where.OR = [
       { subject: { contains: query, mode: "insensitive" } },

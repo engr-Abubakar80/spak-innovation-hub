@@ -2,7 +2,6 @@ import Link from "next/link";
 import {
   ArrowRight,
   CalendarPlus,
-  CalendarRange,
   CheckCircle2,
   Clock,
   CreditCard,
@@ -17,9 +16,33 @@ import { getSettings } from "@/lib/settings";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { getBookingCounts, toPortalBooking } from "@/lib/portal";
 import { BookingStatusBadge } from "@/components/ui/badge";
-import { TableWrapper, Table, THead, TH, TBody, TR, TD } from "@/components/ui/table";
-import { CalendarCheck, Clock, CheckCircle2, Mail } from "lucide-react";
-import { formatDate, formatTimeLabel } from "@/lib/utils";
+
+const QUICK_ACTIONS = [
+  {
+    href: "/dashboard/bookings/new",
+    label: "New Booking",
+    hint: "Request a workspace or service",
+    icon: CalendarPlus,
+  },
+  {
+    href: "/dashboard/bookings/pending",
+    label: "Pending Bookings",
+    hint: "Check requests awaiting approval",
+    icon: Clock,
+  },
+  {
+    href: "/dashboard/messages",
+    label: "Messages",
+    hint: "Contact SPAK support",
+    icon: MessageSquare,
+  },
+  {
+    href: "/dashboard/payments",
+    label: "Payments",
+    hint: "View payment details",
+    icon: CreditCard,
+  },
+];
 
 export default async function DashboardPage() {
   const user = await requireUser();

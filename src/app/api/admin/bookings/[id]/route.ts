@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-<<<<<<< HEAD
 import type { BookingStatus } from "@prisma/client";
-=======
->>>>>>> 41894b2 (User profile and Logo)
 import { requireApiSuperAdmin } from "@/lib/server-auth";
 import { recordAudit } from "@/lib/audit";
 import { prisma } from "@/lib/db";

@@ -46,12 +46,12 @@ export const authOptions: NextAuthOptions = {
           name: user.name,
           role: user.role,
           status: user.status,
-        } as { id: string; email: string; name: string | null; role: string; status: string };
+        };
       },
     }),
   ],
   callbacks: {
-    async jwt({ token, user }: { token: { id?: string; role?: string; status?: string; [key: string]: unknown }; user?: { id?: string; role?: string; status?: string } }) {
+    async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
         token.role = user.role;
@@ -59,11 +59,11 @@ export const authOptions: NextAuthOptions = {
       }
       return token;
     },
-    async session({ session, token }: { session: { user?: { id?: string; role?: string; status?: string; [key: string]: unknown } }; token: { id?: string; role?: string; status?: string } }) {
-      if (session.user) {
+    async session({ session, token }) {
+      if (session.user && token.id) {
         session.user.id = token.id;
-        session.user.role = token.role;
-        session.user.status = token.status;
+        if (token.role) session.user.role = token.role;
+        if (token.status) session.user.status = token.status;
       }
       return session;
     },

@@ -9,7 +9,9 @@ import {
 } from "lucide-react";
 import { getCurrentUser } from "@/lib/session";
 import { isAdmin } from "@/lib/permissions";
-import { UserMenu } from "@/components/layout/user-menu";
+import { prisma } from "@/lib/db";
+import { getSettings } from "@/lib/settings";
+import { PortalShell } from "@/components/portal/portal-shell";
 
 const nav = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },

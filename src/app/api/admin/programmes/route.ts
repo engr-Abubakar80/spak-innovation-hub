@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireApiSuperAdmin } from "@/lib/server-auth";
 import { recordAudit } from "@/lib/audit";
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
   if (!form) return NextResponse.json({ error: "Expected multipart form data" }, { status: 400 });
 
   const raw: Record<string, string> = {};
-  for (const entry of Array.from(form.entries())) { const key = entry[0] as string; const value = entry[1];
+  for (const [key, value] of form.entries()) {
     if (typeof value === "string") raw[key] = value;
   }
   const parsed = programmeSchema.safeParse({
