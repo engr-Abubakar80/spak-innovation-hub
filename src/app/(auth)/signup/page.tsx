@@ -17,6 +17,7 @@ type FormValues = z.infer<typeof signupSchema>;
 export default function SignupPage() {
   const [show, setShow] = useState(false);
   const [done, setDone] = useState(false);
+  const [submittedEmail, setSubmittedEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
   const {
     register,
@@ -36,6 +37,7 @@ export default function SignupPage() {
       setError(body.error || "Could not create your account. Please try again.");
       return;
     }
+    setSubmittedEmail(values.email);
     setDone(true);
   }
 
@@ -47,12 +49,20 @@ export default function SignupPage() {
         </span>
         <h1 className="mt-4 text-xl font-bold text-ink">Check your email</h1>
         <p className="mt-2 text-sm text-ink-muted">
-          We&apos;ve sent a verification link to the email address you provided. Please verify your email
+          We&apos;ve sent a 6-digit verification code to the email address you provided. Enter the code
           to complete your registration.
         </p>
-        <Link href="/login" className="mt-6 inline-block">
-          <Button>Back to sign in</Button>
+        <Link
+          href={`/verify-email?email=${encodeURIComponent(submittedEmail)}`}
+          className="mt-6 inline-block"
+        >
+          <Button>Enter verification code</Button>
         </Link>
+        <p className="mt-4 text-sm text-ink-muted">
+          <Link href="/login" className="link">
+            Back to sign in
+          </Link>
+        </p>
       </div>
     );
   }

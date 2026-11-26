@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import { randomBytes } from "crypto";
 import { prisma } from "@/lib/db";
 import { signupSchema } from "@/lib/validation";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
-import { sendVerificationEmail } from "@/lib/email";
+import { issueVerificationOtp } from "@/lib/verification-otp";
 
 export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => ({}));
@@ -39,14 +38,6 @@ export async function POST(request: NextRequest) {
       status: "ACTIVE",
     },
   });
-  const raw = randomBytes(32).toString("base64url");
-  await prisma.verificationToken.create({
-    data: {
-      identifier: user.email,
-      token: raw,
-      expires: new Date(Date.now() + 1000 * 60 * 60),
-    },
-  });
-  void sendVerificationEmail({ to: user.email, name: user.name || "there", token: raw }).catch(() => undefined);
+  void issueVerificationOtp(user.email, user.name).catch(() => undefined);
   return NextResponse.json({ ok: true }, { status: 201 });
 }

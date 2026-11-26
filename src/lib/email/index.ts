@@ -14,7 +14,16 @@ export interface MailResult {
   reason?: string;
 }
 
+const RESEND_SMTP_HOST = "smtp.resend.com";
+const RESEND_SMTP_USER = "resend";
+const RESEND_FROM = "SPAK Innovation Hub <onboarding@resend.dev>";
+
+function usesResend(): boolean {
+  return !!process.env.RESEND_API_KEY;
+}
+
 function isEmailEnabled(): boolean {
+  if (usesResend()) return true;
   return (
     String(process.env.EMAIL_ENABLED).toLowerCase() === "true" &&
     !!process.env.EMAIL_SERVER_HOST
@@ -25,18 +34,28 @@ let transporter: Transporter | null = null;
 
 function getTransporter(): Transporter {
   if (transporter) return transporter;
+  const resend = usesResend();
+  const host = process.env.EMAIL_SERVER_HOST || (resend ? RESEND_SMTP_HOST : undefined);
+  const port = Number(process.env.EMAIL_SERVER_PORT || (resend ? 465 : 587));
+  const secure = port === 465 || port === 2465;
+  const user = process.env.EMAIL_SERVER_USER || (resend ? RESEND_SMTP_USER : undefined);
+  const pass = process.env.EMAIL_SERVER_PASSWORD || process.env.RESEND_API_KEY;
   transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_SERVER_HOST,
-    port: Number(process.env.EMAIL_SERVER_PORT || 587),
-    secure: Number(process.env.EMAIL_SERVER_PORT) === 465,
-    auth: process.env.EMAIL_SERVER_USER
-      ? {
-          user: process.env.EMAIL_SERVER_USER,
-          pass: process.env.EMAIL_SERVER_PASSWORD,
-        }
-      : undefined,
+    host,
+    port,
+    secure,
+    requireTLS: !secure,
+    auth: user && pass ? { user, pass } : undefined,
   });
   return transporter;
+}
+
+function getFrom(): string {
+  const configured = process.env.EMAIL_FROM;
+  if (usesResend() && (!configured || /@gmail\.com\b/i.test(configured))) {
+    return RESEND_FROM;
+  }
+  return configured || RESEND_FROM;
 }
 
 /**
@@ -45,8 +64,7 @@ function getTransporter(): Transporter {
  * claim delivery succeeded when it did not.
  */
 export async function sendMail(options: MailOptions): Promise<MailResult> {
-  const from =
-    process.env.EMAIL_FROM || "SPAK Innovation Hub <spakhub@gmail.com>";
+  const from = getFrom();
 
   if (!isEmailEnabled()) {
     console.info(
@@ -93,10 +111,22 @@ function wrap(title: string, body: string, cta?: { label: string; url: string })
       <p style="font-size:12px;color:#64748b">This is an automated message from ${org}, Kano, Nigeria. Please do not reply directly to this email.</p>
     </div>
   </div>
-</body></html>`;
+ </body></html>`;
+}
+
+function escapeHtml(value: string): string {
+  const entities: Record<string, string> = {
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
+  };
+  return value.replace(/[&<>"']/g, (char) => entities[char]!);
 }
 
 export async function sendBookingAcknowledgement(params: {
+
   to: string;
   name: string;
   reference: string;
@@ -201,6 +231,29 @@ export async function sendVerificationEmail(params: {
     subject: "Verify your SPAK Innovation Hub email",
     html: wrap("Verify your email", body, { label: "Verify email", url }),
     text: `Verify your email: ${url}`,
+  });
+}
+
+export async function sendVerificationOtp(params: {
+  to: string;
+  name: string;
+  code: string;
+  expiresMinutes?: number;
+}) {
+  const minutes = params.expiresMinutes ?? 10;
+  const body = `
+    <p>Hello ${escapeHtml(params.name)},</p>
+    <p>Use this one-time code to verify your SPAK Innovation Hub email address:</p>
+    <p style="margin:24px 0;text-align:center">
+      <span style="display:inline-block;padding:16px 24px;border:1px solid #cbd5e1;border-radius:12px;background:#f8fafc;font-size:32px;font-weight:700;letter-spacing:8px">${params.code}</span>
+    </p>
+    <p style="font-size:13px;color:#64748b">This code expires in ${minutes} minutes. If you did not request it, you can ignore this email.</p>
+    <p style="font-size:13px;color:#64748b">Never share this code. SPAK staff will never ask you for it.</p>`;
+  return sendMail({
+    to: params.to,
+    subject: "Your SPAK Innovation Hub verification code",
+    html: wrap("Verify your email", body),
+    text: `Your SPAK Innovation Hub verification code is ${params.code}. It expires in ${minutes} minutes. If you did not request it, you can ignore this email.`,
   });
 }
 
